@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky - Wait for your confirm{% endblock %}
+
+{% block page_content %}
+<h1>Wait for confirm</h1>
+<p>Thank you for your registration. Please check your email and confirm your mail address.</p>
+<p>Click <a href="{{ url_for('auth.resend')}}">here</a> to send a new confirm email.</p>
+<p>Click <a href="{{ url_for('main.index')}}">here</a> to come back.</p>
+{% endblock %}
