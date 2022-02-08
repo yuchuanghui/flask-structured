@@ -20,7 +20,7 @@ login_manager.login_view = 'auth.login'  # 匿名用户会被重定向至该蓝�
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    config[config_name].init_app(app)  #注册静态方法
+    config[config_name].init_app(app)  # 注册静态方法
 
     bootstrap.init_app(app)
     mail.init_app(app)

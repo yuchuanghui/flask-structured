@@ -1,4 +1,4 @@
-#注册蓝图
+# 注册蓝图
 
 from flask import Blueprint
 

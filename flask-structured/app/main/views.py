@@ -6,6 +6,7 @@ from .. import db
 from ..models import User
 from flask_login import login_required
 
+
 @main.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
@@ -23,11 +24,11 @@ def index():
 
         else:
             session['known'] = True
-            #form.name.data = ''
+            # form.name.data = ''
         session['name'] = form.name.data
         return redirect(url_for('.index'))
-    return render_template('index.html', \
-                            form=form, name=session.get('name'),\
-                            known=session.get('known', False),\
-                            current_time=datetime.utcnow()
-                            )
+    return render_template('index.html',
+                           form=form,
+                           name=session.get('name'),
+                           known=session.get('known', False),
+                           current_time=datetime.utcnow())

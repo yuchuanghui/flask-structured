@@ -13,12 +13,23 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('email can not be empty'), Length(1, 64), Email()])
-    username = StringField('Username', validators=[DataRequired(), Length(1, 64),\
-        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,\
-            'Usernames must have only letters, number, dots or underscores')])
-    password = PasswordField('Password', validators=[\
-        DataRequired('Password can not be empty'), EqualTo('password2', message='Password must be match')])
+    email = StringField('Email',
+                        validators=[DataRequired('email can not be empty'),
+                                    Length(1, 64),
+                                    Email()])
+    username = StringField('Username',
+                           validators=[
+                               DataRequired(),
+                               Length(1, 64),
+                               Regexp(
+                                   '^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                   'Usernames must have only letters, number, dots or underscores')
+                           ])
+    password = PasswordField('Password',
+                             validators=[
+                                 DataRequired('Password can not be empty'),
+                                 EqualTo('password2', message='Password must be match')
+                             ])
     password2 = PasswordField('Password2', validators=[DataRequired()])
     submit = SubmitField('Register')
 
@@ -33,11 +44,33 @@ class RegistrationForm(FlaskForm):
 
 class ChangePasswordForm(FlaskForm):
     current_password = PasswordField('Current Password', validators=[DataRequired(), Length(1, 64)])
-    new_password = PasswordField('New Password', validators=[DataRequired(), Length(1, 64), EqualTo('new_password2', message='New password must be match.')])
+    new_password = PasswordField('New Password',
+                                 validators=[
+                                     DataRequired(),
+                                     Length(1, 64),
+                                     EqualTo('new_password2', message='New password must be match.')
+                                 ])
     new_password2 = PasswordField('New Password', validators=[DataRequired(), Length(1, 64)])
     submit = SubmitField('Change Password')
 
 
-class ResetPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('email can not be empty'), Length(1, 64), Email()])
+class SendResetMailForm(FlaskForm):
+    email = StringField('Email',
+                        validators=[DataRequired('email can not be empty'),
+                                    Length(1, 64),
+                                    Email()])
     submit = SubmitField('Send Email')
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField(
+        '请输入新密码', validators=[DataRequired('email can not be empty'),
+                              Length(1, 64)
+                              ])
+    password2 = PasswordField('再次输入新密码',
+                              validators=[
+                                  DataRequired('email can not be empty'),
+                                  EqualTo('password'),
+                                  Length(1, 64)
+                              ])
+    submit = SubmitField('Confirm')

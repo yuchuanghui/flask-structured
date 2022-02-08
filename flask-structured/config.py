@@ -14,7 +14,7 @@ class Config:
     # SQLALCHEMY_TRACKMODIFICATIONS = False
     SECRET_KEY = 'yisiyuhui'
     MAIL_SERVER = 'smtp.qq.com'
-    MAIL_PORT = 587 #邮件端口
+    MAIL_PORT = 587  # 邮件端口
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
     MAIL_USERNAME = 'yisiyuhui@qq.com'
@@ -38,6 +38,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.environ.get(basedir, 'data.sqlite')
+
 
 config = {
     'development': DevelopmentConfig,

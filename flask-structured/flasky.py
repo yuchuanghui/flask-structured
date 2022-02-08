@@ -6,12 +6,14 @@ from flask_migrate import Migrate
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
 
+
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, User=User, Role=Role)
 
+
 @app.cli.command()
-def test(): #命令行唤起测试时使用的名字 flask test
+def test():  # 命令行唤起测试时使用的名字 flask test
     """Run the unit tests"""
     import unittest
     tests = unittest.TestLoader().discover("tests")

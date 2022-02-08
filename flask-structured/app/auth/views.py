@@ -1,19 +1,18 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from . import auth
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm, SendResetMailForm
 from ..models import User
 from .. import db
 from ..email import send_mail
 from time import sleep
 
+
 @auth.before_app_request
 def before_request():
-    if current_user.is_authenticated \
-        and not current_user.confirmed \
-        and request.blueprint != 'auth' \
-        and request.endpoint != 'static':
+    if current_user.is_authenticated and not current_user.confirmed and request.blueprint != 'auth' and request.endpoint != 'static':
         return redirect(url_for('auth.unconfirmed'))
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,18 +21,20 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            next = request.args.get('next') #重定向回到原来的页面
+            next = request.args.get('next')  # 重定向回到原来的页面
             if next is None or not next.startswith('/'):
                 next = url_for('main.index')
             return redirect(next)
         flash('Invalid username or password')
     return render_template('auth/login.html', form=form)
 
+
 @auth.route('/logout')
 def logout():
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('main.index'))
+
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
@@ -48,6 +49,7 @@ def register():
         return redirect(url_for('auth.unconfirmed'))
     return render_template('auth/register.html', form=form)
 
+
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
@@ -61,13 +63,19 @@ def confirm(token):
         flash('The confirmation link is invalid or has expired.')
     return redirect(url_for('auth.unconfirmed'))
 
+
 @auth.route('/resend')
 @login_required
 def resend():
     token = current_user.generate_confirmation_token()
-    send_mail(current_user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
+    send_mail(current_user.email,
+              'Confirm Your Account',
+              'auth/email/confirm',
+              user=current_user,
+              token=token)
     flash('A new email has been sent.')
     return redirect(url_for('auth.unconfirmed'))
+
 
 @auth.route('/unconfirmed')
 @login_required
@@ -76,10 +84,11 @@ def unconfirmed():
         return redirect(url_for('auth.confirmed'))
     return render_template('auth/unconfirmed.html')
 
+
 @auth.route('/confirmed')
-@login_required
 def confirmed():
     return render_template('auth/jump.html')
+
 
 @auth.route('/changepassword', methods=['GET', 'POST'])
 @login_required
@@ -96,10 +105,34 @@ def changepassword():
             return redirect(url_for('auth.changepassword'))
     return render_template('auth/ch_password.html', form=form)
 
-@auth.route('/resetpassword', methods=['GET', 'POST'])
-def resetpassword():
-    form = ResetPasswordForm()
-    user = User.filter_by(email=form.emial.data).first()
+
+@auth.route('/sendresetmail', methods=['GET', 'POST'])
+def sendresetmail():
+    form = SendResetMailForm()
+    user = User.query.filter_by(email=form.email.data).first()
     if form.validate_on_submit():
         token = user.generate_confirmation_token()
-        send_mail(user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
+        send_mail(user.email,
+                  'Confirm Your Account',
+                  'auth/email/resetpassword',
+                  user=user,
+                  token=token)
+        return redirect(url_for('auth.confirmed'))
+    return render_template('auth/sendresetmail.html', form=form)
+
+
+@auth.route('/resetpassword/<token>/<email>', methods=['GET', 'POST'])
+def resetpassword(token, email):
+    form = ResetPasswordForm()
+    user = User.query.filter_by(email=email).first()
+    if form.validate_on_submit():
+        if user.confirm(token):
+            user.change_password(form.password.data)
+            db.session.commit()
+            login_user(user)
+            flash('complete')
+            return redirect(url_for('auth.confirmed'))
+        else:
+            flash('token has expired or wrong. Please resend a email.')
+            redirect(url_for('auth.sendresetemail'))
+    return render_template('auth/resetpassword.html', form=form)
