@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from . import auth
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm, SendResetMailForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm, SendResetMailForm, EditProfileForm
 from ..models import User
 from .. import db
 from ..email import send_mail
@@ -10,8 +10,10 @@ from time import sleep
 
 @auth.before_app_request
 def before_request():
-    if current_user.is_authenticated and not current_user.confirmed and request.blueprint != 'auth' and request.endpoint != 'static':
-        return redirect(url_for('auth.unconfirmed'))
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed and request.blueprint != 'auth' and request.endpoint != 'static':
+            return redirect(url_for('auth.unconfirmed'))
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -32,7 +34,7 @@ def login():
 @auth.route('/logout')
 def logout():
     logout_user()
-    flash('You have been logged out.')
+    flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
 
 
@@ -136,3 +138,20 @@ def resetpassword(token, email):
             flash('token has expired or wrong. Please resend a email.')
             redirect(url_for('auth.sendresetemail'))
     return render_template('auth/resetpassword.html', form=form)
+
+@auth.route('/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.location = form.location.data
+        current_user.about_me = form.about_me.data
+        db.session.add(current_user._get_current_object())
+        db.session.commit()
+        flash('You profile have been updated.')
+        return redirect(url_for('main.user', username=current_user.username))
+    form.name.data = current_user.name
+    form.location.data = current_user.location
+    form.location.about_me = current_user.about_me
+    return render_template('auth/edit_profile.html', form=form)

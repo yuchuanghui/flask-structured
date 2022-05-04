@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% from 'bootstrap5/form.html' import render_form %}
 
 {% block title %}Flasky - Registration{% endblock %}
 {% block page_content %}
@@ -7,6 +7,6 @@
     <h1>New Registration</h1>
 </div>
 <div class='col-md-4'>
-    {{wtf.quick_form(form)}}
+    {{render_form(form)}}
 </div>
 {% endblock %}

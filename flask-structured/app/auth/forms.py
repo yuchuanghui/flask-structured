@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
 from ..models import User
@@ -74,3 +74,11 @@ class ResetPasswordForm(FlaskForm):
                                   Length(1, 64)
                               ])
     submit = SubmitField('Confirm')
+
+
+class EditProfileForm(FlaskForm):
+    name = StringField('Your name', validators=[DataRequired('Your name can not be empty') ,
+                                                Length(1, 64)])
+    location = StringField('Location', validators=[Length(0, 64)])
+    about_me = TextAreaField('About me')
+    submit = SubmitField('Submit')
