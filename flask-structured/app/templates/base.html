@@ -21,6 +21,9 @@
             width: 90%;
             margin: 0 auto;
         }
+        .avatar {
+            width: 200px;
+        }
     </style>
     {% endblock %}
 
@@ -37,8 +40,8 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Flasky{{ render_icon('bell') }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-        </button>
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="navbar-collapse collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -46,29 +49,29 @@
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.user', username=current_user.username) }}"> Profile </a>
+                        <a class="nav-link" href="{{ url_for('auth.user', username=current_user.username) }}"> Profile </a>
                     </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0" ">
-                {% if current_user.is_authenticated %}
-                <li class="nav-item dropdown ">
-                    <a class="nav-link dropdown-toggle " href="# " id="navbarDropdown " role="button " data-bs-toggle="dropdown " aria-expanded="false ">
-                        Account
-                    </a>
-                    <ul class="dropdown-menu " aria-labelledby="navbarDropdown ">
-                        <li><a class="dropdown-item " href="{{ url_for( 'auth.logout') }} ">Log Out</a></li>
-                        <li><a class="dropdown-item " href="{{ url_for( 'auth.changepassword') }} ">Change Password</a></li>
-                {% else %}
-                <li><a class="dropdown-item " href="{{ url_for( 'auth.login')}} ">Log In</a></li>
-                <li><a class="dropdown-item " href="{{ url_for( 'auth.register')}} ">Register</a></li>
-                {% endif %}
-                    </ul>
-                </li>
-            </ul>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown ">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu " aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="{{ url_for( 'auth.logout') }} ">Log Out</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for( 'auth.changepassword') }} ">Change Password</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                        <li><a class="nav-link" href="{{ url_for('auth.login')}} ">Log In</a></li>
+                        <li><a class="nav-link" href="{{ url_for('auth.register')}} ">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block content %}

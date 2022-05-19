@@ -1,0 +1,46 @@
+<div class="card" style="margin: 5px 0 5px 0">
+    <div class="card-header">
+        Recent Post
+    </div>
+    <div class="card-body">
+        {% for post in posts %}
+        <div class="row g-0 post-main" style="margin-top:0px">
+            <div class="col-10 post-name">
+                <p><b>{{ post.author.name }}</b></p>
+            </div>
+            <div class="col-2 post-time">
+                <p ><small class="text-muted">Last updated {{ moment(post.timestamp).fromNow() }}</small></p>
+            </div> 
+            <div class="col post-body">
+                {% if post.body_html %}
+                {{ post.body_html | safe }}
+                {% else %}
+                {{ post.body }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="row justify-content-end post-footer">
+            {% if current_user == post.author %}
+            <div class="col-auto">
+                <a class="btn btn-primary fs-6" href="{{ url_for('main.edit', id=post.id) }}">
+                    Edit Post
+                </a>
+            </div>
+            {% elif current_user.can(Permission.ADMIN)%}
+            <div class="col-auto">
+                <a class="btn btn-danger fs-6" href="{{ url_for('main.edit', id=post.id) }}">
+                    Edit Post
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="col-auto">
+                <a class="btn btn-primary fs-6" href="{{ url_for('main.post', id=post.id) }}">
+                   <small>Permalink</small>
+                </a>
+            </div>
+        </div>
+            <hr>
+            {% endfor %}
+    </div>
+</div>

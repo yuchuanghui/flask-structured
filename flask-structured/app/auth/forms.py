@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
@@ -77,8 +78,12 @@ class ResetPasswordForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    name = StringField('Your name', validators=[DataRequired('Your name can not be empty') ,
+    name = StringField('Your name', validators=[DataRequired('Your name can not be empty'),
                                                 Length(1, 64)])
     location = StringField('Location', validators=[Length(0, 64)])
     about_me = TextAreaField('About me')
+    submit = SubmitField('Submit')
+
+class UploadAvatarForm(FlaskForm):
+    avatar = FileField('Avatar', validators=[FileRequired(), FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')

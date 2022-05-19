@@ -4,7 +4,11 @@ from . import login_manager
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
-from datetime import datetime 
+from datetime import datetime
+from .avatar import show_avatar, upload_avatar
+from base64 import b64encode
+from markdown import markdown
+import bleach
 
 # 注册数据库对象
 
@@ -85,7 +89,8 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
-    avatar = db.Column(db.String(), default='bird.png')
+    avatar = db.Column(db.String(), default='/bird.png')
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -124,7 +129,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token.encode('utf-8'))
-        except:
+        except (TypeError, ValueError):
             return False
         if data.get('confirm') != self.id:
             return False
@@ -143,6 +148,18 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def show_my_avatar(self):
+        if self.avatar is None:
+            self.avatar = '/bird.png'
+        avatar_bytes = show_avatar('get', self.avatar)
+        avatar = "data:image/jpg;base64," + str(b64encode(avatar_bytes))[2: -1]
+        return avatar
+
+    def upload_my_avatar(self, avatar):
+        filename = self.username + avatar.filename[-4:]
+        upload_avatar(filename, avatar, avatar.mimetype)
+        return '/' + filename
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, perm):
@@ -153,3 +170,23 @@ class AnonymousUser(AnonymousUserMixin):
 
 
 login_manager.anonymous_user = AnonymousUser  # 告诉login_manager默认的匿名用户是上面定义的
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text())
+    body_html = db.Column(db.Text())
+    timestamp = db.Column(db.DateTime(), index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
+        # target.body_html = bleach.linkify(bleach.clean(
+        #     markdown(value, extensions=['md4mathjax'], output_format='html'),
+        #      strip=True
+        # ))
+        target.body_html = bleach.linkify(markdown(value, extensions=['md4mathjax'], output_format='html'))
+
+
+db.event.listen(Post.body, 'set', Post.on_changed_body)

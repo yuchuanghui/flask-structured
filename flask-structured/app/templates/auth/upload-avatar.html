@@ -1,0 +1,14 @@
+{% extends "base.html" %} 
+{% block title %}Flasky - upload avatar {% endblock %} 
+{% block page_content %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+<div class="row">
+    <div class="col-md-4">
+        <img class='.img-fluid avatar' src="{{ avatar }}">
+    </div>
+    <div class="col-md-4">
+        {{ render_form(form) }}
+    </div>
+</div>
+{% endblock %}

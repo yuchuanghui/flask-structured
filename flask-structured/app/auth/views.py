@@ -1,12 +1,12 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from . import auth
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm, SendResetMailForm, EditProfileForm
-from ..models import User
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ResetPasswordForm, SendResetMailForm, EditProfileForm, UploadAvatarForm
+from ..models import User, Post
 from .. import db
 from ..email import send_mail
 from time import sleep
-
+import requests
 
 @auth.before_app_request
 def before_request():
@@ -14,7 +14,6 @@ def before_request():
         current_user.ping()
         if not current_user.confirmed and request.blueprint != 'auth' and request.endpoint != 'static':
             return redirect(url_for('auth.unconfirmed'))
-
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -139,6 +138,13 @@ def resetpassword(token, email):
             redirect(url_for('auth.sendresetemail'))
     return render_template('auth/resetpassword.html', form=form)
 
+@auth.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    avatar = user.show_my_avatar()
+    return render_template('auth/user.html', user=user, avatar=avatar, posts=posts)
+
 @auth.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -150,8 +156,21 @@ def edit_profile():
         db.session.add(current_user._get_current_object())
         db.session.commit()
         flash('You profile have been updated.')
-        return redirect(url_for('main.user', username=current_user.username))
+        return redirect(url_for('auth.user', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.location.about_me = current_user.about_me
     return render_template('auth/edit_profile.html', form=form)
+
+@auth.route('/upload-avatar', methods=['GET', 'POST'])
+@login_required
+def upload_avatar():
+    form = UploadAvatarForm()
+    avatar = current_user.show_my_avatar()
+    if form.validate_on_submit():
+        avatar = form.avatar.data
+        current_user.avatar = current_user.upload_my_avatar(avatar)
+        db.session.add(current_user)
+        db.session.commit()
+        return redirect(url_for('auth.user', username=current_user.username))
+    return render_template('auth/upload-avatar.html', avatar=avatar, form=form)
