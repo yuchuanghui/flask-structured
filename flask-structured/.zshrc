@@ -12,3 +12,6 @@ export FLASKY_ADMIN='flask_ych@163.com'
 export FLASK_CONFIG='development'
 
 export PATH=$PATH:/home/yisiyuhui/.local/bin
+
+export COS_SECRET_ID="AKIDrXx63j8G7i24pKcePu74j7E4dvxiCPM2"
+export COS_SECRET_KEY="RbU7TYLr76oFPIuFJ6crqXx6zbwzlGUR"

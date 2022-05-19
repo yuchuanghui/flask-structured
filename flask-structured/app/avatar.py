@@ -7,6 +7,7 @@ import base64
 import json
 import requests
 from datetime import datetime
+import os
 
 def get_authorization(method, key):
     # timestamp
@@ -16,8 +17,8 @@ def get_authorization(method, key):
     key_time = str(start_timestamp) + ";" + str(end_timestamp)
 
     # sign_key
-    secret_id = "AKIDrXx63j8G7i24pKcePu74j7E4dvxiCPM2"
-    secret_key = "RbU7TYLr76oFPIuFJ6crqXx6zbwzlGUR"
+    secret_id = os.getenv("COS_SECRET_ID")
+    secret_key = os.getenv("COS_SECRET_KEY")
     sign_key = hmac.new(secret_key.encode('utf-8'), key_time.encode('utf-8'), hashlib.sha1).hexdigest()
 
     # list
