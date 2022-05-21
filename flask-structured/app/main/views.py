@@ -69,11 +69,11 @@ def edit(id):
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
 
-@main.route('/admin')
-@login_required
-@admin_reqired
-def for_admins_only():
-    return "For administrators"
+# @main.route('/admin')
+# @login_required
+# @admin_reqired
+# def for_admins_only():
+#     return "For administrators"
 
 @main.route('/moderate')
 @login_required

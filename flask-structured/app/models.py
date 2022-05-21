@@ -1,3 +1,5 @@
+from flask_login import current_user
+from flask import redirect, url_for, flash
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
@@ -9,6 +11,7 @@ from .avatar import show_avatar, upload_avatar
 from base64 import b64encode
 from markdown import markdown
 import bleach
+from flask_admin.contrib.sqla import ModelView
 
 # 注册数据库对象
 

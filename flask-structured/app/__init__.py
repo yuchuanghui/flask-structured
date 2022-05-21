@@ -8,18 +8,18 @@ from flask_sqlalchemy import SQLAlchemy
 from config import config
 from flask_login import LoginManager
 from flask_pagedown import PageDown
-from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+from app.my_admin_class import MyAdmin, MyAdminIndexView
 
 bootstrap = Bootstrap5()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 pagedown = PageDown()
-admin = Admin()
+admin = MyAdmin(name='Fuck', template_mode='bootstrap4')
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'  # 匿名用户会被重定向至该蓝图页面
-
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -32,13 +32,22 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     pagedown.init_app(app)
-    admin.init_app(app)
+    admin.init_app(app, index_view=MyAdminIndexView())
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, prefix='auth')
+
+    from .admin_bp import admin_bp as admin_blueprint
+    app.register_blueprint(admin_blueprint)
+
+    from app.models import User, Role, Post, Permission
+    admin.add_view(ModelView(User, db.session))
+    admin.add_view(ModelView(Post, db.session))
+    admin.add_view(ModelView(Role, db.session))
+
     # define routes and custom error pages
 
     return app
