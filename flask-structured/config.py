@@ -25,6 +25,7 @@ class Config:
     # SQLALCHEMY_TRACKMODIFICATIONS = False
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024
     FLASKY_POSTS_PER_PAGE = 5
+    FLASKY_FOLLOWERS_PER_PAGE = 10
     
     @staticmethod
     def init_app(app):

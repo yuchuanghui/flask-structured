@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% import "_macros.html" as macros %}
+{% block title %}Flasky - Follow{% endblock %} 
+
+{% block page_content %}
+<p>Your {{tag}}</p>
+{% for follow in follows %}
+<ul class="list-group list-group-horizontal">
+    <li class="list-group-item">{{ follow['user'] }}</li>
+    <li class="list-group-item">{{ follow['time'] }}</li>
+</ul>
+{% endfor %}
+{{ macros.pagination_widget(pagination, endpoint, username=user.username, tag=tag) }}
+{% endblock %}

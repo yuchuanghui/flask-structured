@@ -78,6 +78,11 @@ class Permission():
     MODERATE = 8
     ADMIN = 16
 
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    up_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    fan_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -94,6 +99,8 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar = db.Column(db.String(), default='/bird.png')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    fan = db.relationship('Follow', foreign_keys=[Follow.up_id], backref=db.backref('up', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
+    up = db.relationship('Follow', foreign_keys=[Follow.fan_id], backref=db.backref('fan', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -163,6 +170,26 @@ class User(UserMixin, db.Model):
         upload_avatar(filename, avatar, avatar.mimetype)
         return '/' + filename
 
+    # self.fan no query
+    def follow(self, user):
+        db.session.add(Follow(up=user, fan=self))
+
+    def unfollow(self, user):
+        db.session.delete(self.up.filter_by(up_id=user.id).first())
+
+    def is_following(self, user):
+        if user.id is None:
+            return False
+        return self.up.filter_by(up_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        if user.id is None:
+            return False
+        return self.fan.filter_by(fan_id=user.id).first() is not None
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.up_id == Post.author_id).filter_by(fan_id=self.id)
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, perm):
@@ -190,6 +217,5 @@ class Post(db.Model):
         #      strip=True
         # ))
         target.body_html = bleach.linkify(markdown(value, extensions=['md4mathjax'], output_format='html'))
-
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)

@@ -1,6 +1,6 @@
 import os
 from app import create_app, db
-from app.models import User, Role, Post, Permission
+from app.models import User, Role, Post, Permission, Follow
 from flask_migrate import Migrate
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -12,7 +12,7 @@ def include_permissions_class():
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Role=Role, Post=Post, Permission=Permission)
+    return dict(db=db, User=User, Role=Role, Post=Post, Permission=Permission, Follow=Follow)
 
 
 @app.cli.command()

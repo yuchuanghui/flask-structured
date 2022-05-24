@@ -1,4 +1,4 @@
-<div class="card" style="margin: 5px 0 5px 0">
+<div class="card" style="margin: 0 0 5px 0">
     <div class="card-header">
         Recent Post
     </div>
@@ -6,7 +6,7 @@
         {% for post in posts %}
         <div class="row g-0 post-main" style="margin-top:0px">
             <div class="col-10 post-name">
-                <p><b>{{ post.author.name }}</b></p>
+                <p><a href="{{ url_for('main.user', username=post.author.username) }}"><b>{{ post.author.name }}</b></a></p>
             </div>
             <div class="col-2 post-time">
                 <p ><small class="text-muted">Last updated {{ moment(post.timestamp).fromNow() }}</small></p>

@@ -3,10 +3,12 @@
 {% block page_content %}
 <div class="row justify-content-center">
     <div class="col-2" >
-            <img class= 'img-thumbnail img-fluid' style="height:90%;width:100%"src={{ avatar }}>
+            <img class= 'img-thumbnail img-fluid' style="height:auto;width:100%"src={{ avatar }}>
     </div>
-    <div class="col-2">
+    <div class="col-auto">
         <h1>{{ user.username.title() }}</h1>
+
+        {% include '_follow.html' %}
         {% if user.name or user.location %}
         <p>
             {% if user.name %}{{ user.name }}{% endif %} {% if user.location %} From <a href="https://www.google.com/maps/search/{{ user.location }}">
@@ -24,14 +26,13 @@
         </p>
     </div>
     <div class="w-100"></div>
-    <div class="col-2 text-center">
-        <a href="{{ url_for('auth.upload_avatar') }}" type="button" class="btn btn-outline-primary center-block" styles="align: center">Upload avatar</a>
+    <div class="col-2">
+        <a href="{{ url_for('auth.upload_avatar') }}" type="button" class="btn btn-outline-primary center-block">Upload avatar</a>
     </div>
     <div class="col-2">
         {% if user == current_user %} <a class="btn btn-outline-primary" href="{{ url_for('auth.edit_profile') }}" role="button"> Edit Profile </a> {% endif %}
     </div>
 </div>
-
 
 <h3>Post by you</h3>
 {% include 'auth/_post.html' %}

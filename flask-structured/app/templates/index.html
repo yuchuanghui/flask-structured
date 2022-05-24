@@ -1,8 +1,8 @@
 {% extends "base.html" %} 
 {% from 'bootstrap5/form.html' import render_form %}
 {% import "_macros.html" as macros %}
-{% block title %}Flasky - Index{% endblock %} 
 
+{% block title %}Flasky - Index{% endblock %} 
 {% block page_content %}
 
 <div class="time-reminder">
@@ -19,6 +19,29 @@
     {% if current_user.can(Permission.WRITE) %} {{ render_form(form) }} {% endif %}
 </div>
 
+<div >
+<ul class="nav nav-tabs" style="margin-top:3px;margin-bottom:0px;">
+    
+    {% if show_followed %}
+    <li class="nav-item">
+      <a class="nav-link" aria-current="page" href="{{ url_for('main.show_all') }}">All</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link 
+        active" aria-current="page" href="{{ url_for('main.show_followed') }}">Follow</a>
+    </li>
+    {% else %}
+    <li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="{{ url_for('main.show_all') }}">All</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link 
+        " aria-current="page" href="{{ url_for('main.show_followed') }}">Follow</a>
+    </li>
+    {% endif %}
+
+</ul>
+</div>
 {% include 'auth/_post.html' %}
 
 <div class="pagination justify-content-center">
@@ -30,15 +53,29 @@
 {% block scripts %}
      {{ super() }} <!-- 继承块的内容 -->
     {{ pagedown.include_pagedown() }}
-    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script> -->
+    <script type="text/javascript">
+        var obj = document.getElementById("flask-pagedown-body-preview");
+        obj.classList.add('border')
+        obj.classList.add('rounded')
+        obj.style.marginTop = '3px'
+        obj.style.minHeight = "10px"
+        obj.setAttribute('placeholder', 'Preview')
+    </script>
 {% endblock  %}
+
+
+
+
+
+
+
 <!-- <div class="row row-cols-4 row-cols-md-1 g-4">
     {% for post in posts %}
     <div class="col">
         <div class="card mb-3" style="max-width: 640px">
             <div class="row" style="max-height: 30%">
                 <div class="col-md-1">
-                    <a href="{{ url_for('auth.user', username=post.author.username) }}">
+                    <a href="{{ url_for('main.user', username=post.author.username) }}">
                         
                     </a>
                 </div>
@@ -59,7 +96,7 @@
     {% for post in posts %}
     <li class="post">
         <div class="profile-thumbnail">
-            <a href="{{ url_for('auth.user', username=post.author.username) }}">
+            <a href="{{ url_for('main.user', username=post.author.username) }}">
                 <img class="img-rounded profile-thumbnail avatar" src="{{ avatar }}">
             </a>
         </div>
@@ -67,7 +104,7 @@
             {{ moment(post.timestamp).fromNow() }}
         </div>
         <div>
-            <a href="{{ url_for('auth.user', username=post.author.username) }}">
+            <a href="{{ url_for('main.user', username=post.author.username) }}">
                 {{ post.author.username }}
             </a>
         </div>

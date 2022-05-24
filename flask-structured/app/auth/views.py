@@ -138,13 +138,6 @@ def resetpassword(token, email):
             redirect(url_for('auth.sendresetemail'))
     return render_template('auth/resetpassword.html', form=form)
 
-@auth.route('/user/<username>')
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    posts = user.posts.order_by(Post.timestamp.desc()).all()
-    avatar = user.show_my_avatar()
-    return render_template('auth/user.html', user=user, avatar=avatar, posts=posts)
-
 @auth.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -156,7 +149,7 @@ def edit_profile():
         db.session.add(current_user._get_current_object())
         db.session.commit()
         flash('You profile have been updated.')
-        return redirect(url_for('auth.user', username=current_user.username))
+        return redirect(url_for('main.user', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.location.about_me = current_user.about_me
@@ -172,5 +165,5 @@ def upload_avatar():
         current_user.avatar = current_user.upload_my_avatar(avatar)
         db.session.add(current_user)
         db.session.commit()
-        return redirect(url_for('auth.user', username=current_user.username))
+        return redirect(url_for('main.user', username=current_user.username))
     return render_template('auth/upload-avatar.html', avatar=avatar, form=form)
