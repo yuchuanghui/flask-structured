@@ -34,6 +34,9 @@ def create_app(config_name):
     pagedown.init_app(app)
     admin.init_app(app, index_view=MyAdminIndexView())
 
+    from .api import api as api_blueprint
+    app.register_blueprint(api_blueprint, prefix='api')
+
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
@@ -41,12 +44,14 @@ def create_app(config_name):
     app.register_blueprint(auth_blueprint, prefix='auth')
 
     from .admin_bp import admin_bp as admin_blueprint
-    app.register_blueprint(admin_blueprint)
+    app.register_blueprint(admin_blueprint, prefix='admin')
 
-    from app.models import User, Role, Post, Permission
+    from app.models import User, Role, Post, Permission, Comment, Follow
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(Post, db.session))
     admin.add_view(ModelView(Role, db.session))
+    admin.add_view(ModelView(Comment, db.session))
+    admin.add_view(ModelView(Follow, db.session))
 
     # define routes and custom error pages
 

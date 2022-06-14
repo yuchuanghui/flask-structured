@@ -17,7 +17,13 @@
         {{ bootstrap.load_css() }}
         <link rel="shortcut icon" href="{{ url_for('static', filename='facicon.ico') }}" type="image/x-icon">
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-avatar@1.0.3/dist/avatar.min.css" rel="stylesheet">
+        <style>
+            .navbar>.container-fluid {
+                width: 90%;
+                margin: 0 auto;
+            }
+        </style>
         {% endblock %}
     {% endblock %}
     <title>{% block title %}Flasky{% endblock %}</title>
@@ -27,7 +33,7 @@
 
 <body>
     {%block navbar %}
-    <div class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Flasky{{ render_icon('bell') }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +79,7 @@
         {{ message }}
     </div>
     {% endfor %}  -->
-    {{ render_messages() }}
+    {{ render_messages(container=False, dismissible=True) }}
     {% block page_content %}
     {% endblock %}
 </div>

@@ -84,6 +84,9 @@ class Follow(db.Model):
     fan_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __repr__(self):
+        return f'<{self.fan.username} follow {self.up.username}>'
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -101,6 +104,7 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     fan = db.relationship('Follow', foreign_keys=[Follow.up_id], backref=db.backref('up', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
     up = db.relationship('Follow', foreign_keys=[Follow.fan_id], backref=db.backref('fan', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref=db.backref('user', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -147,6 +151,19 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
+    def generate_auth_token(self, expiration):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return User.query.get(data['id'])
+
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
 
@@ -187,6 +204,13 @@ class User(UserMixin, db.Model):
             return False
         return self.fan.filter_by(fan_id=user.id).first() is not None
 
+    def to_json(self):
+        json_user = {
+            'username': self.username,
+            'email': self.email,
+        }
+        return json_user
+
     @property
     def followed_posts(self):
         return Post.query.join(Follow, Follow.up_id == Post.author_id).filter_by(fan_id=self.id)
@@ -208,6 +232,7 @@ class Post(db.Model):
     body_html = db.Column(db.Text())
     timestamp = db.Column(db.DateTime(), index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    comments = db.relationship('Comment', backref=db.backref('post', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -218,4 +243,36 @@ class Post(db.Model):
         # ))
         target.body_html = bleach.linkify(markdown(value, extensions=['md4mathjax'], output_format='html'))
 
+    def to_json(self):
+        json_post = {
+            'url': url_for('api.get_post', id=self.id),
+            'body': self.body,
+            'body_html': self.body_html,
+            'timestamp': self.timestamp,
+            'author_url': url_for('api.get_user', id=self.id),
+            'comments_url': url_for('api.get_comments', id=self.id),
+            'comments_count': self.comments_count()
+        }
+        return json_post
+
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    post_id = db.Column(db.Integer, db.ForeignKey(Post.id))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    body = db.Column(db.String)
+    disabled = db.Column(db.Boolean, default=True)
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
+        # target.body_html = bleach.linkify(bleach.clean(
+        #     markdown(value, extensions=['md4mathjax'], output_format='html'),
+        #      strip=True
+        # ))
+        target.body_html = bleach.linkify(markdown(value, extensions=['md4mathjax'], output_format='html'))
+
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)

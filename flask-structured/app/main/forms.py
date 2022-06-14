@@ -10,3 +10,7 @@ class NameForm(FlaskForm):
 class PostForm(FlaskForm):
     body = PageDownField("'What's on your mind?", validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+class CommentForm(FlaskForm):
+    body = PageDownField("What do you want to say?", validators=[DataRequired()])
+    submit = SubmitField('Submit')

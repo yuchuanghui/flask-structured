@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
 
 {% block page_content %}
 {% include 'auth/_post.html' %}
+{% include '_comment.html' %}
 {% endblock %}

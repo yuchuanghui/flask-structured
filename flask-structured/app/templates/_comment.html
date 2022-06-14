@@ -1,0 +1,29 @@
+<div class="card">
+    <div class="card-header">
+        Comments <span class="badge badge-secondary rounded">{{ posts[0].comments.count() }}
+    </div>
+    <div class="card-body">
+        <div class="comment_commit">
+            {{ render_form(form) }}
+        </div>
+
+        {% for comment in comments: %}
+        <hr/>
+        <div class="row">
+            <div class="col-auto">
+                <img class="avatar avatar-64 bg-light rounded-circle text-white p-1" src="{{ comment.user.show_my_avatar() }}" alt="avatar">
+            </div>
+            <div class="col-auto">
+                <p class="text-muted">{{ comment.user.name }} {{moment(comment.timestamp).fromNow()}}</p>
+                <div class="col comment-body">
+                    {% if comment.body_html %}
+                    {{ comment.body_html | safe }}
+                    {% else %}
+                    {{ comment.body }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

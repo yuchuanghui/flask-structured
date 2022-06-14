@@ -1,9 +1,9 @@
 from datetime import datetime
 from flask import render_template, session, redirect, url_for, current_app, request, abort, flash, make_response
 from . import main
-from .forms import NameForm, PostForm
+from .forms import NameForm, PostForm, CommentForm
 from .. import db
-from ..models import User, Permission, Post, Follow
+from ..models import User, Permission, Post, Follow, Comment
 from flask_login import login_required, current_user
 from ..decorators import admin_reqired, permission_required
 import base64
@@ -78,10 +78,20 @@ def user(username):
     avatar = user.show_my_avatar()
     return render_template('user.html', user=user, avatar=avatar, posts=posts)
 
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
     post = Post.query.get_or_404(id)
-    return render_template('post.html', posts=[post])
+    comments = post.comments.all()
+    form = CommentForm()
+    if form.validate_on_submit():
+        if not current_user.can(Permission.COMMENT):
+            flash('You do not have permission to comment')
+            return redirect(url_for('main.post'), id=post.id)
+        comment = Comment(body=form.body.data, post=post, user=current_user)
+        db.session.add(comment)
+        db.session.commit()
+        return redirect(url_for('main.post', id=post.id))
+    return render_template('post.html', posts=[post], comments=comments, form=form)
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
